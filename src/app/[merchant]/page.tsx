@@ -8,8 +8,8 @@ export default function MerchantPage({
   return (
     <>
       <TierBlock params={{
-        price: "$10.12",
-        title: "Test Tier",
+        price: "$10.12 CA",
+        title: "Test Tier Donator",
         description: "This is an example tier",
         buyLink: "https://example.com",
       }}/>
