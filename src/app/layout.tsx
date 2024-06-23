@@ -18,6 +18,11 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${GeistSans.variable} bg-[#F5F5F5]`}>
       <body>
+        <nav className="mb-12 bg-white py-2 shadow-md">
+          Navigation Bar
+          {/* Navbar TODO */}
+        </nav>
+
         <TRPCReactProvider>{children}</TRPCReactProvider>
       </body>
     </html>
