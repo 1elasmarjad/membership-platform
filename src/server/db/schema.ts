@@ -112,3 +112,38 @@ export const verificationTokens = createTable(
     compoundKey: primaryKey({ columns: [vt.identifier, vt.token] }),
   }),
 );
+
+export const merchants = createTable("merchant", {
+  id: text("id", { length: 255 })
+    .notNull()
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  name: text("name", { length: 255 }).notNull(),
+  ownerId: text("ownerId", { length: 255 })
+    .notNull()
+    .references(() => users.id),
+});
+
+export const merchantRelations = relations(merchants, ({ one }) => ({
+  user: one(users, { fields: [merchants.ownerId], references: [users.id] }),
+}));
+
+export const tier = createTable("tier", {
+  id: text("id", { length: 255 })
+    .notNull()
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  merchantId: text("merchantId", { length: 255 })
+    .notNull()
+    .references(() => merchants.id),
+  title: text("title", { length: 255 }).notNull(),
+  description: text("description", { length: 1000 }).notNull(),
+  stripeId: text("stripeId", { length: 255 }).notNull(),
+});
+
+export const tierRelations = relations(tier, ({ one }) => ({
+  user: one(merchants, {
+    fields: [tier.merchantId],
+    references: [merchants.id],
+  }),
+}));
