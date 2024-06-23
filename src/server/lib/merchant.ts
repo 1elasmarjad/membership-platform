@@ -14,7 +14,14 @@ interface MerchantInfo {
   tiers: TierInfo[];
 }
 
-export async function getMerchantInfo(merchantId: string): Promise<MerchantInfo> {
+export async function getMerchantInfo(
+  merchantId: string,
+): Promise<MerchantInfo> {
+  // sleep for 5
+  
+  await new Promise(r => setTimeout(r, 2000));
+
+
   return {
     id: merchantId,
     name: "test",
@@ -24,7 +31,7 @@ export async function getMerchantInfo(merchantId: string): Promise<MerchantInfo>
         price: "$10.12 CAD",
         description: "This is a test",
         buyLink: "https://example.com",
-        title: "Test Donator Tier"
+        title: "Test Donator Tier",
       },
     ],
   };
