@@ -136,7 +136,7 @@ export const tiers = createTable("tier", {
     .references(() => merchants.id),
   title: text("title", { length: 255 }).notNull(),
   description: text("description", { length: 1000 }).notNull(),
-  stripeId: text("stripeId", { length: 255 }).notNull(),
+  priceId: text("stripeId", { length: 255 }).notNull(),
 });
 
 export const tierRelations = relations(tiers, ({ one }) => ({

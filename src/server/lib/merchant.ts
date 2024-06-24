@@ -2,6 +2,11 @@ import "server-only";
 import { db } from "../db";
 import { merchants, tiers } from "../db/schema";
 import { eq } from "drizzle-orm";
+import { env } from "~/env";
+import Stripe from "stripe";
+
+// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
+const stripe = new Stripe(env.STRIPE_API_KEY);
 
 interface TierInfo {
   id: string;
@@ -19,6 +24,53 @@ interface MerchantInfo {
     name: string;
     image: string | null;
   };
+}
+
+export async function createMerchant({
+  name,
+  ownerId,
+}: {
+  name: string;
+  ownerId: string;
+}): Promise<string> {
+  const generatedId = name.toLowerCase().replace(" ", "-");
+
+  await db.insert(merchants).values({
+    id: generatedId,
+    name: name,
+    ownerId: ownerId,
+  });
+
+  return generatedId;
+}
+
+export async function addTier({
+  merchantId,
+  title,
+  description,
+  price,
+}: Omit<TierInfo, "id"> & {
+  merchantId: string;
+  price: {
+    amount: number;
+    currency: string;
+  };
+}) {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  const stripePrice: {
+    id: string;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+  } = await stripe.prices.create({
+    currency: price.currency,
+    unit_amount: price.amount,
+  });
+
+  await db.insert(tiers).values({
+    merchantId: merchantId,
+    title: title,
+    description: description,
+    priceId: stripePrice.id,
+  });
 }
 
 export async function getTierBlocks(merchantId: string): Promise<TierInfo[]> {
