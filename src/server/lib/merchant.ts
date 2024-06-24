@@ -1,6 +1,6 @@
 import "server-only";
 import { db } from "../db";
-import { merchants } from "../db/schema";
+import { merchants, tiers } from "../db/schema";
 import { eq } from "drizzle-orm";
 
 interface TierInfo {
@@ -14,35 +14,52 @@ interface TierInfo {
 interface MerchantInfo {
   id: string;
   name: string;
-  tiers: TierInfo[];
+  owner: {
+    id: string;
+    name: string;
+    image: string | null;
+  };
+}
+
+export async function getTierBlocks(merchantId: string): Promise<TierInfo[]> {
+  const tierData = await db.query.tiers.findMany({
+    where: eq(tiers.merchantId, merchantId),
+  });
+
+  if (!tierData) {
+    throw new Error("Merchant not found");
+  }
+
+  return tierData.map((tier) => ({
+    id: tier.id,
+    title: tier.title,
+    price: "$10 CAD",
+    description: tier.description,
+    buyLink: "/buy",
+  }));
 }
 
 export async function getMerchantInfo(
   merchantId: string,
 ): Promise<MerchantInfo> {
-
-  const merchant = await db.query.merchants.findFirst({
+  const merchantData = await db.query.merchants.findFirst({
     where: eq(merchants.id, merchantId),
     with: {
-      tiers: true,
+      owner: true,
     },
   });
 
-  if (!merchant) {
+  if (!merchantData) {
     throw new Error("Merchant not found");
   }
 
   return {
-    id: merchantId,
-    name: merchant.name,
-    tiers: [
-      {
-        id: "1",
-        price: "$10.12 CAD",
-        description: "This is a test",
-        buyLink: "https://example.com",
-        title: "Test Donator Tier",
-      },
-    ],
+    id: merchantData.id,
+    name: merchantData.name,
+    owner: {
+      id: merchantData.owner.id,
+      name: merchantData.owner.name ?? "Unknown",
+      image: merchantData.owner.image ?? null,
+    },
   };
 }

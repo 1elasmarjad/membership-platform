@@ -122,7 +122,7 @@ export const merchants = createTable("merchant", {
 });
 
 export const merchantRelations = relations(merchants, ({ one, many }) => ({
-  user: one(users, { fields: [merchants.ownerId], references: [users.id] }),
+  owner: one(users, { fields: [merchants.ownerId], references: [users.id] }),
   tiers: many(tiers),
 }));
 
