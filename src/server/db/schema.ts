@@ -114,21 +114,19 @@ export const verificationTokens = createTable(
 );
 
 export const merchants = createTable("merchant", {
-  id: text("id", { length: 255 })
-    .notNull()
-    .primaryKey()
-    .$defaultFn(() => crypto.randomUUID()),
+  id: text("id", { length: 255 }).notNull().primaryKey(),
   name: text("name", { length: 255 }).notNull(),
   ownerId: text("ownerId", { length: 255 })
     .notNull()
     .references(() => users.id),
 });
 
-export const merchantRelations = relations(merchants, ({ one }) => ({
+export const merchantRelations = relations(merchants, ({ one, many }) => ({
   user: one(users, { fields: [merchants.ownerId], references: [users.id] }),
+  tiers: many(tiers),
 }));
 
-export const tier = createTable("tier", {
+export const tiers = createTable("tier", {
   id: text("id", { length: 255 })
     .notNull()
     .primaryKey()
@@ -141,9 +139,9 @@ export const tier = createTable("tier", {
   stripeId: text("stripeId", { length: 255 }).notNull(),
 });
 
-export const tierRelations = relations(tier, ({ one }) => ({
-  user: one(merchants, {
-    fields: [tier.merchantId],
+export const tierRelations = relations(tiers, ({ one }) => ({
+  merchant: one(merchants, {
+    fields: [tiers.merchantId],
     references: [merchants.id],
   }),
 }));
