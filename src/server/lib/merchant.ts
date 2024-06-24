@@ -11,7 +11,10 @@ const stripe = new Stripe(env.STRIPE_API_KEY);
 interface TierInfo {
   id: string;
   title: string;
-  price: string;
+  price: {
+    amount: number;
+    currency: string;
+  };
   description: string;
   buyLink: string;
 }
@@ -82,13 +85,22 @@ export async function getTierBlocks(merchantId: string): Promise<TierInfo[]> {
     throw new Error("Merchant not found");
   }
 
-  return tierData.map((tier) => ({
-    id: tier.id,
-    title: tier.title,
-    price: "$10 CAD",
-    description: tier.description,
-    buyLink: "/buy",
-  }));
+  return Promise.all(
+    tierData.map(async (tier) => {
+      const price = await stripe.prices.retrieve(tier.priceId);
+
+      return {
+        id: tier.id,
+        title: tier.title,
+        price: {
+          amount: Math.round(price.unit_amount ?? 0 / 100),
+          currency: price.currency,
+        },
+        description: tier.description,
+        buyLink: "/buy",
+      };
+    }),
+  );
 }
 
 export async function getMerchantInfo(

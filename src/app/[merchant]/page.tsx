@@ -40,7 +40,10 @@ async function TierBlocks({ merchant }: { merchant: string }) {
           <>
             <TierBlock
               data={{
-                price: o.price,
+                price:
+                  o.price.amount.toString() +
+                  " " +
+                  o.price.currency.toUpperCase(),
                 title: o.title,
                 description: o.description,
                 buyLink: o.buyLink,
