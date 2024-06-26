@@ -52,7 +52,7 @@ export async function addTier({
   title,
   description,
   price,
-}: Omit<TierInfo, "id"> & {
+}: Omit<TierInfo, "id" | "buyLink"> & {
   merchantId: string;
   price: {
     amount: number;

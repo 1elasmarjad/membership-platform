@@ -1,36 +1,63 @@
 "use server";
 
-import { getSession } from "next-auth/react";
 import "server-only";
-import { createMerchant } from "./lib/merchant";
+import { addTier, createMerchant } from "./lib/merchant";
+import { z } from "zod";
+import { getServerAuthSession } from "./auth";
+
+const CreateMerchantSchema = z.object({
+  name: z.string(),
+  tiers: z.array(
+    z.object({
+      merchantId: z.string(),
+      title: z.string(),
+      description: z.string(),
+      price: z.object({
+        amount: z.number(),
+        currency: z.string(),
+      }),
+    }),
+  ),
+});
 
 export async function createAllMerchantData(formData: FormData) {
   const data: Record<string, unknown> = {};
   formData.forEach((value, key) => (data[key] = value));
   const json = JSON.stringify(data);
 
-  console.log(json);
+  const parse = await CreateMerchantSchema.safeParseAsync(JSON.parse(json));
 
-  // zod validation required
+  if (!parse.success) {
+    console.error("Invalid merchant creation form input", parse.error);
+    throw Error("Invalid merchant creation form input");
+  }
 
-  // if (!formData.get("name")) {
-  //   throw Error("Invalid form input");
-  // }
+  const session = await getServerAuthSession();
 
-  // // get user
-  // const session = await getSession();
+  if (!session) {
+    console.error("Not authenticated");
+    throw Error("Not authenticated");
+  }
 
-  // if (!session) {
-  //   throw Error("Not authenticated");
-  // }
+  const userId = session.user.id;
 
-  // const userId = session.user.id;
+  // TODO: add transaction support
 
-  // // create merchant
-  // await createMerchant({
-  //   name: formData.get("name"),
-  //   ownerId: userId,
-  // });
+  // create merchant
+  await createMerchant({
+    name: parse.data.name,
+    ownerId: userId,
+  });
 
-  // return null;
+  // add tiers
+  for (const tier of parse.data.tiers) {
+    await addTier({
+      merchantId: tier.merchantId,
+      title: tier.title,
+      description: tier.description,
+      price: tier.price,
+    });
+  }
+
+  console.log("Created merchant data");
 }
