@@ -66,6 +66,12 @@ export async function addTier({
   } = await stripe.prices.create({
     currency: price.currency,
     unit_amount: price.amount,
+    product_data: {
+      name: title,
+    },
+    recurring: {
+      interval: "month",
+    },
   });
 
   await db.insert(tiers).values({
@@ -89,15 +95,26 @@ export async function getTierBlocks(merchantId: string): Promise<TierInfo[]> {
     tierData.map(async (tier) => {
       const price = await stripe.prices.retrieve(tier.priceId);
 
+      const session = await stripe.checkout.sessions.create({
+        success_url: `${env.NEXTAUTH_URL}/${merchantId}/success`,
+        line_items: [
+          {
+            price: price.id,
+            quantity: 1,
+          },
+        ],
+        mode: "subscription",
+      });
+
       return {
         id: tier.id,
         title: tier.title,
         price: {
-          amount: Math.round(price.unit_amount ?? 0 / 100),
+          amount: Math.round((price.unit_amount ?? 0) / 100),
           currency: price.currency,
         },
         description: tier.description,
-        buyLink: "/buy",
+        buyLink: session.url ?? "",
       };
     }),
   );

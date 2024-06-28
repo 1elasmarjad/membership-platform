@@ -15,7 +15,10 @@
   },
   "dependencies": {
     "@auth/drizzle-adapter": "^1.1.0",
+    "@emotion/react": "^11.11.4",
+    "@emotion/styled": "^11.11.5",
     "@libsql/client": "^0.6.0",
+    "@mui/material": "^5.15.20",
     "@t3-oss/env-nextjs": "^0.10.1",
     "@tanstack/react-query": "^5.39.0",
     "@trpc/client": "next",
