@@ -1,5 +1,5 @@
 import { getMerchantInfo, getTierBlocks } from "~/server/lib/merchant";
-import TierBlock, { LoadingTierBlock } from "../_components/tier-block";
+import TierBlock, { TierBlockSkeleton } from "../_components/tier-block";
 import { Suspense } from "react";
 
 export default async function MerchantPage({
@@ -17,9 +17,9 @@ export default async function MerchantPage({
         <Suspense
           fallback={
             <>
-              <LoadingTierBlock />
-              <LoadingTierBlock />
-              <LoadingTierBlock />
+              <TierBlockSkeleton />
+              <TierBlockSkeleton />
+              <TierBlockSkeleton />
             </>
           }
         >
@@ -69,7 +69,7 @@ async function MerchantTitle({ merchant }: { merchant: string }) {
           Subscribe to {merchantInfo.name}
         </h1>
         <h2 className="text-lg text-gray-500">
-          Owned by {merchantInfo.owner.name}
+          Support {merchantInfo.owner.name}
         </h2>
       </>
     );
