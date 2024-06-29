@@ -21,7 +21,7 @@ export default async function RootLayout({
 
   return (
     <html lang="en" className={`${GeistSans.variable} bg-[#F5F5F5]`}>
-      <body>
+    <body>
         <nav className="mb-12 bg-white py-4 shadow-md">
           <Section>
             <div className="flex w-full items-center justify-between">

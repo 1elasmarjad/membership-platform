@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@mui/material";
+import { Button, Step, StepLabel, Stepper } from "@mui/material";
 import TextField from "@mui/material/TextField";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -11,13 +11,23 @@ import {
 } from "~/server/api/routers/merchant";
 import { api } from "~/trpc/react";
 
+const steps = ["Information", "Tiers"];
+
 export default function MerchantForm() {
   const router = useRouter();
 
   const [data, setData] = useState<z.infer<typeof CreateMerchantSchema>>({
     name: "",
-    tiers: [],
+    tiers: [
+      {
+        title: "",
+        description: "",
+        price: { amount: 0, currency: "" },
+      },
+    ],
   });
+
+  const [step, setStep] = useState<number>(0);
 
   const createMerchant = api.merchant.create.useMutation({
     onSuccess: (data) => {
@@ -27,29 +37,99 @@ export default function MerchantForm() {
   });
 
   return (
-    <div className="flex flex-col gap-6">
-      <TextField
-        name="name"
-        label="Name"
-        id="name"
-        value={data.name}
-        onChange={(e) => setData({ ...data, name: e.target.value })}
-      />
+    <>
+      <Stepper alternativeLabel activeStep={step} className="w-full pb-12">
+        {steps.map((label) => (
+          <Step key={label}>
+            <StepLabel>{label}</StepLabel>
+          </Step>
+        ))}
+      </Stepper>
 
-      <div>
-        <h3 className="text-center text-3xl">Tiers</h3>
-        <TierForm setData={setData} data={data} idx={0} />
+      <div className="flex w-full flex-col gap-6">
+        {step === 0 && (
+          <>
+            <TextField
+              name="name"
+              label="Name"
+              id="name"
+              value={data.name}
+              onChange={(e) => setData({ ...data, name: e.target.value })}
+            />
+            <Button
+              variant="contained"
+              onClick={() => {
+                setStep(1);
+              }}
+            >
+              Next
+            </Button>
+          </>
+        )}
+        {step === 1 && (
+          <>
+            {data.tiers.map((tier, idx) => (
+              <div
+                className="rounded-lg border border-gray-300 p-4"
+                key={`tb_${idx}`}
+              >
+                <TierForm key={idx} idx={idx} setData={setData} data={data} />
+                <div className="flex justify-center">
+                  <Button
+                    color="warning"
+                    variant="contained"
+                    size="small"
+                    className="mt-4"
+                    onClick={() => {
+                      const newTiers = [...data.tiers];
+                      newTiers.splice(idx, 1);
+                      setData({ ...data, tiers: newTiers });
+                    }}
+                  >
+                    Remove
+                  </Button>
+                </div>
+              </div>
+            ))}
+
+            <Button
+              variant="contained"
+              onClick={() => {
+                setData({
+                  ...data,
+                  tiers: [
+                    ...data.tiers,
+                    {
+                      title: "",
+                      description: "",
+                      price: { amount: 0, currency: "" },
+                    },
+                  ],
+                });
+              }}
+            >
+              Add Tier
+            </Button>
+            <Button
+              variant="contained"
+              onClick={() => {
+                setStep(0);
+              }}
+            >
+              Back
+            </Button>
+            <Button
+              variant="contained"
+              onClick={() => {
+                createMerchant.mutate(data);
+              }}
+            >
+              Create
+            </Button>
+          </>
+        )}
       </div>
-
-      <Button
-        variant="contained"
-        onClick={() => {
-          createMerchant.mutate(data);
-        }}
-      >
-        Create Merchant
-      </Button>
-    </div>
+    </>
   );
 }
 
@@ -79,48 +159,50 @@ function TierForm({
   }, [tier]);
 
   return (
-    <div className="flex w-full flex-col gap-3">
-      <TextField
-        name="title"
-        label="Title"
-        id="title"
-        size="small"
-        onChange={(e) => setTier({ ...tier, title: e.target.value })}
-        value={tier.title}
-      />
-      <TextField
-        name="description"
-        label="Description"
-        id="description"
-        size="small"
-        onChange={(e) => setTier({ ...tier, description: e.target.value })}
-        value={tier.description}
-      />
-      <TextField
-        name="price.amount"
-        label="Price Amount"
-        id="priceAmount"
-        size="small"
-        onChange={(e) =>
-          setTier({
-            ...tier,
-            price: { ...tier.price, amount: Number(e.target.value) },
-          })
-        }
-        value={tier.price.amount}
-      />
-      <TextField
-        name="price.currency"
-        label="Price Currency"
-        size="small"
-        id="priceCurrency"
-        onChange={(e) =>
-          setTier({
-            ...tier,
-            price: { ...tier.price, currency: e.target.value },
-          })
-        }
-      />
-    </div>
+    <>
+      <div className="flex w-full flex-col gap-3">
+        <TextField
+          name="title"
+          label="Title"
+          id="title"
+          size="small"
+          onChange={(e) => setTier({ ...tier, title: e.target.value })}
+          value={tier.title}
+        />
+        <TextField
+          name="description"
+          label="Description"
+          id="description"
+          size="small"
+          onChange={(e) => setTier({ ...tier, description: e.target.value })}
+          value={tier.description}
+        />
+        <TextField
+          name="price.amount"
+          label="Price Amount"
+          id="priceAmount"
+          size="small"
+          onChange={(e) =>
+            setTier({
+              ...tier,
+              price: { ...tier.price, amount: Number(e.target.value) },
+            })
+          }
+          value={tier.price.amount}
+        />
+        <TextField
+          name="price.currency"
+          label="Price Currency"
+          size="small"
+          id="priceCurrency"
+          onChange={(e) =>
+            setTier({
+              ...tier,
+              price: { ...tier.price, currency: e.target.value },
+            })
+          }
+        />
+      </div>
+    </>
   );
 }
