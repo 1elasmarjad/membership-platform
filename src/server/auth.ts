@@ -51,6 +51,9 @@ export const authOptions: NextAuthOptions = {
         id: user.id,
       },
     }),
+    async signIn({ user, account, profile, email, credentials }) {
+      return true;
+    },
   },
   adapter: DrizzleAdapter(db, {
     usersTable: users,

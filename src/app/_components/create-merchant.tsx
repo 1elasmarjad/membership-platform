@@ -55,10 +55,16 @@ export default function MerchantForm() {
               id="name"
               value={data.name}
               onChange={(e) => setData({ ...data, name: e.target.value })}
+              autoComplete="off"
             />
             <Button
               variant="contained"
               onClick={() => {
+                if (data.name.length < 3) {
+                  console.log("Name must be at least 3 characters");
+                  return;
+                }
+
                 setStep(1);
               }}
             >
@@ -81,6 +87,11 @@ export default function MerchantForm() {
                     size="small"
                     className="mt-4"
                     onClick={() => {
+                      if (data.tiers.length === 1) {
+                        console.log("Cannot remove last tier");
+                        return;
+                      }
+
                       const newTiers = [...data.tiers];
                       newTiers.splice(idx, 1);
                       setData({ ...data, tiers: newTiers });
@@ -162,23 +173,22 @@ function TierForm({
     <>
       <div className="flex w-full flex-col gap-3">
         <TextField
-          name="title"
           label="Title"
           id="title"
           size="small"
           onChange={(e) => setTier({ ...tier, title: e.target.value })}
           value={tier.title}
+          autoComplete="off"
         />
         <TextField
-          name="description"
           label="Description"
           id="description"
           size="small"
           onChange={(e) => setTier({ ...tier, description: e.target.value })}
           value={tier.description}
+          autoComplete="off"
         />
         <TextField
-          name="price.amount"
           label="Price Amount"
           id="priceAmount"
           size="small"
@@ -189,9 +199,9 @@ function TierForm({
             })
           }
           value={tier.price.amount}
+          autoComplete="off"
         />
         <TextField
-          name="price.currency"
           label="Price Currency"
           size="small"
           id="priceCurrency"
@@ -201,6 +211,7 @@ function TierForm({
               price: { ...tier.price, currency: e.target.value },
             })
           }
+          autoComplete="off"
         />
       </div>
     </>
